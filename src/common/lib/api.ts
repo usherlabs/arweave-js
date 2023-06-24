@@ -84,7 +84,10 @@ export default class Api {
     const baseURL = `${this.config.protocol}://${this.config.host}:${this.config.port}`;
 
     /* responseType is purely for backwards compatibility with external apps */
-    const responseType = init?.responseType;
+    let responseType = init?.responseType;
+    if (init?.method === "POST" && endpoint === "tx") {
+      responseType = "arraybuffer";
+    }
     delete init?.responseType;
 
     if (endpoint.startsWith("/")) {
