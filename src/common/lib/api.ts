@@ -54,14 +54,14 @@ export default class Api {
     };
   }
 
-	private applyRequestDefaults(endpoint: string,, method: "GET" | "POST", config?: RequestInitWithAxios){
+	private applyRequestDefaults(endpoint: string, method: "GET" | "POST", config?: RequestInitWithAxios){
 		if(!config){
 			return config;
 		}
 		if(!this.config.defaultResponseTypes){
 			return config;
 		}
-		if(endpoint === 'tx' && this.METHOD_POST){
+		if(endpoint === 'tx' && method === this.METHOD_POST){
 			if(this.config.defaultResponseTypes.postTransaction){
 				if(!config.responseType){
 					config.responseType = this.config.defaultResponseTypes.postTransaction
