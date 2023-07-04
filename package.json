@@ -1,5 +1,5 @@
 {
-  "name": "arweave",
+  "name": "@logsn/arweave",
   "version": "1.14.0",
   "description": "Arweave JS client library",
   "main": "./node/index.js",
