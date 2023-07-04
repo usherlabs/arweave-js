@@ -1,3 +1,5 @@
+type ResponseType = "arraybuffer" | "json" | "text" | "webstream";
+
 export interface ApiConfig {
   host?: string;
   protocol?: string;
@@ -6,6 +8,9 @@ export interface ApiConfig {
   logging?: boolean;
   logger?: Function;
   network?: string;
+	defaultResponseTypes?: {
+		postTransaction: ResponseType
+	}
 }
 
 export interface ResponseWithData<T = any> extends Response {
@@ -13,7 +18,7 @@ export interface ResponseWithData<T = any> extends Response {
 }
 
 export interface RequestInitWithAxios extends RequestInit {
-  responseType?: "arraybuffer" | "json" | "text" | "webstream";
+  responseType?: ResponseType;
 }
 
 export default class Api {
@@ -49,10 +54,28 @@ export default class Api {
     };
   }
 
+	private applyRequestDefaults(endpoint: string,, method: "GET" | "POST", config?: RequestInitWithAxios){
+		if(!config){
+			return config;
+		}
+		if(!this.config.defaultResponseTypes){
+			return config;
+		}
+		if(endpoint === 'tx' && this.METHOD_POST){
+			if(this.config.defaultResponseTypes.postTransaction){
+				if(!config.responseType){
+					config.responseType = this.config.defaultResponseTypes.postTransaction
+				}
+			}
+		}
+		return config;
+	}
+
   public async get<T = any>(
     endpoint: string,
     config?: RequestInitWithAxios
   ): Promise<ResponseWithData<T>> {
+		config = this.applyRequestDefaults(endpoint, this.METHOD_GET, config);
     return await this.request(endpoint, { ...config, method: this.METHOD_GET });
   }
 
@@ -61,6 +84,7 @@ export default class Api {
     body: any,
     config?: RequestInitWithAxios
   ): Promise<ResponseWithData<T>> {
+		config = this.applyRequestDefaults(endpoint, this.METHOD_GET, config);
     const headers = new Headers(config?.headers || {});
 
     if (!headers.get("content-type")?.includes("application/json")) {
@@ -85,9 +109,6 @@ export default class Api {
 
     /* responseType is purely for backwards compatibility with external apps */
     let responseType = init?.responseType;
-    if (init?.method === "POST" && endpoint === "tx") {
-      responseType = "arraybuffer";
-    }
     delete init?.responseType;
 
     if (endpoint.startsWith("/")) {
